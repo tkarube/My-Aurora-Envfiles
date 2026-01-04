@@ -28,7 +28,8 @@ appearance.apply(config)
 -- ---------------------------------------------------------
 -- 3. Keybindings (config.keys)
 -- ---------------------------------------------------------
-config.keys = require("keys")
+local keys = require("keys")
+keys.apply(config)
 
 -- ---------------------------------------------------------
 -- 4. Mouse Bindings (Middle-click to close tab)
