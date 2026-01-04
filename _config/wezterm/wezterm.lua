@@ -18,9 +18,8 @@ config.font = wezterm.font("Roboto Mono", { weight = "Medium", stretch = "Normal
 config.font_size = 12
 
 -- ---------------------------------------------------------
--- 2. Tab Bar Settings (Styling)
+-- 2. Appearance Settings (Styling)
 -- ---------------------------------------------------------
--- config.show_close_tab_button_in_tabs = true -- Add "Close (x)" button
 
 -- local appearance = require("appearance_powerline")
 local appearance = require("appearance_retro")

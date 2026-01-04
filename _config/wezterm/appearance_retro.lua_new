@@ -7,8 +7,6 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	local vars = tab.active_pane.user_vars
 	local is_ssh = vars.IS_SSH == "1"
 	local is_sudo = vars.IS_SUDO == "1"
-
-	-- Reverted to use the standard pane title
 	local title = tab.active_pane.title
 
 	-- 1. Calculate equal width for each tab
@@ -17,37 +15,37 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	local num_tabs = #tabs
 	local target_width = math.floor(window_cols / num_tabs)
 
-	-- 2. Define Dracula Colors and Logic Priority
-	-- Environment status (SSH/Sudo) is prioritized over the "Active" state
-	-- so that colors remain distinct even when the tab is selected.
-	local bg = "#282a36" -- Default Inactive Background
-	local fg = "#f8f8f2" -- Default Inactive Foreground
+	-- 2. Define Dracula Colors
+	local bg = "#282a36"
+	local fg = "#f8f8f2"
 
-	if is_ssh then
+	if tab.is_active then
+		bg = "#bd93f9" -- Dracula Purple for active
+		fg = "#282a36"
+	elseif is_ssh then
 		bg = "#ffb86c" -- Dracula Orange for SSH
 		fg = "#282a36"
 	elseif is_sudo then
 		bg = "#ff5555" -- Dracula Red for Sudo
 		fg = "#f8f8f2"
-	elseif tab.is_active then
-		bg = "#bd93f9" -- Dracula Purple for Active
-		fg = "#282a36"
 	elseif hover then
 		bg = "#44475a" -- Dracula Selection for Hover
 		fg = "#f8f8f2"
 	end
 
-	-- 3. Format Title string to ensure equal width
+	-- 3. Format Title string to ensure equal width and prevent "..path"
 	-- Subtract 2 for the padding spaces " " .. title .. " "
 	local content_width = target_width - 2
 	if content_width < 1 then
 		content_width = 1
 	end
 
-	-- Use truncate_right to handle titles longer than the calculated width
+	-- Use truncate_right to ensure ".." only appears at the end (right side)
 	local display_title = wezterm.truncate_right(title, content_width)
-	-- Use pad_right to fill the rest of the tab with spaces
+	-- Use pad_right to fill the rest of the tab with spaces, forcing it to target_width
 	display_title = wezterm.pad_right(display_title, content_width)
+
+	wezterm.log_info(string.format("Target: %d, Title: '%s'", content_width, display_title))
 
 	return {
 		{ Background = { Color = bg } },
@@ -65,7 +63,8 @@ function M.apply(config)
 	config.use_fancy_tab_bar = false
 	config.tab_bar_at_bottom = false
 
-	-- Set a high max width to allow the Lua-calculated width to take effect
+	-- IMPORTANT: Set a very high max width to allow the Lua-calculated width to take effect.
+	-- If this is set to the default (16), tabs will never expand regardless of Lua code.
 	config.tab_max_width = 300
 
 	config.colors = {
